@@ -1,0 +1,132 @@
+/* TenantDashboard.css */
+
+/* Container for the entire dashboard */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f7fafc;  /* Light gray background */
+  }
+  
+  /* Sidebar Styling */
+  .sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #8B5CF6 0%, #7C3AED 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .sidebar-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .sidebar-nav {
+    flex-grow: 1;
+  }
+  
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 15px;
+    background-color: #A78BFA;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+  }
+  
+  .sidebar-link:hover {
+    background-color: #6D28D9;
+  }
+  
+  .icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+  }
+  
+  .logout-btn {
+    background-color: #EF4444;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+  }
+  
+  .logout-btn:hover {
+    background-color: #D94B49;
+  }
+  
+  /* Main Content Styling */
+  .main-content {
+    flex-grow: 1;
+    padding: 30px;
+  }
+  
+  .welcome-text {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 40px;
+    color: #1F2937;
+  }
+  
+  /* Grid for Dashboard Cards */
+  .dashboard-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #4B5563;
+    margin-bottom: 10px;
+  }
+  
+  .card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #8B5CF6;
+  }
+  
+  /* Media Queries for Responsiveness */
+  @media (max-width: 768px) {
+    .dashboard-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .sidebar {
+      display: none; /* Hide the sidebar on small screens */
+    }
+    .main-content {
+      padding: 20px;
+    }
+  }
+  
