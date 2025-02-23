@@ -1,10 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Signup from "./Signup";
-import Login from "./Login";
-import AdminDashboard from "./AdminDashboard";
-import TenantDashboard from "./TenantDashboard";
-import ManagerDashboard from "./ManagerDashboard";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
+import AdminDashboard from "./pages/AdminDashboard";
+import TenantDashboard from "./pages/TenantDashboard";
+import ManagerDashboard from "./pages/ManagerDashboard";
 import PrivateRoute from "./PrivateRoute";
 
 function App() {
