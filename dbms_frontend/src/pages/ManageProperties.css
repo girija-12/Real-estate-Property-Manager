@@ -1,0 +1,58 @@
+.manage-properties-container {
+    padding: 20px;
+  }
+  
+  .add-property-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .add-property-form input {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .add-btn {
+    background-color: #2563EB;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .add-btn:hover {
+    background-color: #1E40AF;
+  }
+  
+  .properties-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .properties-table th, .properties-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+  
+  .properties-table th {
+    background-color: #2563EB;
+    color: white;
+  }
+  
+  .delete-btn {
+    background-color: #EF4444;
+    color: white;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .delete-btn:hover {
+    background-color: #D94B49;
+  }
+  

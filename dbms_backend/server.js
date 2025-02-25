@@ -28,8 +28,13 @@ module.exports = db;
 // Middleware to parse JSON requests
 app.use(express.json());
 
-// Enable CORS for all requests
-app.use(cors());
+// Enable CORS for specific origin (React app at localhost:3000)
+app.use(cors({
+  origin: 'http://localhost:3000',  // Only allow requests from this origin (React app)
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allow these HTTP methods
+  credentials: true  // Allow credentials like cookies, headers to be sent
+}));
+
 
 // Sample in-memory users array (In a real app, you would use a database)
 let users = [];
@@ -114,6 +119,69 @@ app.post('/login', (req, res) => {
         user: { username: user.username, role: user.role, full_name: user.full_name },
       });
     });
+  });
+});
+
+// Get users route
+app.get('/get-users', (req, res) => {
+  const query = 'SELECT * FROM Users';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error fetching users' });
+    }
+    console.log("Fetched users:", results); // Log the fetched users
+    res.json({ users: results });
+  });
+});
+
+// Get properties route
+app.get('/get-properties', (req, res) => {
+  const query = 'SELECT * FROM Properties';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error fetching properties' });
+    }
+    console.log("Fetched properties:", results); // Log the fetched properties
+    res.json({ properties: results });
+  });
+});
+
+// Get dashboard counts (users, properties, pending maintenance requests)
+app.get('/api/dashboard/counts', (req, res) => {
+  const queries = [
+    // Count total users excluding tenants
+    'SELECT COUNT(*) AS count FROM Users',
+    
+    // Count total properties
+    'SELECT COUNT(*) AS count FROM Properties',
+    
+    // Count pending maintenance requests (status = 'open')
+    'SELECT COUNT(*) AS count FROM MaintenanceRequests WHERE status = "open"'
+  ];
+
+  // Execute all queries simultaneously using Promise.all
+  Promise.all(queries.map(query => new Promise((resolve, reject) => {
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error("Error executing query:", query, err); // Log error for debugging
+        reject(err);
+      } else {
+        console.log("Query results for", query, results); // Log query results for debugging
+        resolve(results[0].count);
+      }
+    });
+  })))
+  .then((results) => {
+    console.log("Dashboard counts:", results); // Log final counts
+    res.status(200).json({
+      totalUsers: results[0],            // Total users (admin, manager)
+      propertiesManaged: results[1],     // Total properties
+      pendingApprovals: results[2]       // Pending maintenance requests
+    });
+  })
+  .catch((err) => {
+    console.error("Error fetching counts:", err); // Log error for debugging
+    res.status(500).json({ message: 'Error fetching dashboard counts', error: err });
   });
 });
 

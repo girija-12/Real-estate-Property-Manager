@@ -1,9 +1,31 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BarChart, Users, Home, LogOut } from "lucide-react";
 import './AdminDashboard.css';  // Import the custom CSS file
 
 const AdminDashboard = () => {
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [propertiesManaged, setPropertiesManaged] = useState(0);
+  const [pendingApprovals, setPendingApprovals] = useState(0);
+
+  // Fetch the data for dashboard stats from the backend on component mount
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/dashboard/counts');
+        const data = await response.json();
+        
+        // Update state with the fetched data
+        setTotalUsers(data.totalUsers);
+        setPropertiesManaged(data.propertiesManaged);
+        setPendingApprovals(data.pendingApprovals);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = "/login";
@@ -37,15 +59,15 @@ const AdminDashboard = () => {
           {/* Dashboard Cards */}
           <div className="card">
             <h3 className="card-title">Total Users</h3>
-            <p className="card-value">256</p>
+            <p className="card-value">{totalUsers}</p>
           </div>
           <div className="card">
             <h3 className="card-title">Properties Managed</h3>
-            <p className="card-value">120</p>
+            <p className="card-value">{propertiesManaged}</p>
           </div>
           <div className="card">
             <h3 className="card-title">Pending Approvals</h3>
-            <p className="card-value">5</p>
+            <p className="card-value">{pendingApprovals}</p>
           </div>
         </div>
       </main>
