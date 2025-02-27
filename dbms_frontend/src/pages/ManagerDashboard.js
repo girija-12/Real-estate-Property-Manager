@@ -16,6 +16,9 @@ const ManagerDashboard = () => {
         <h2 className="sidebar-title">Manager Dashboard</h2>
         <nav className="sidebar-nav">
           <Link to="/manager-dashboard" className="sidebar-link">
+            <ClipboardList className="icon" /> Dashboard
+          </Link>
+          <Link to="/manage-properties" className="sidebar-link">
             <ClipboardList className="icon" /> Manage Properties
           </Link>
           <Link to="/manage-tenants" className="sidebar-link">

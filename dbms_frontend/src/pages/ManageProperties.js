@@ -85,10 +85,10 @@ const ManageProperties = () => {
         <tbody>
           {properties.map(property => (
             <tr key={property.id}>
-              <td>{property.name}</td>
+              <td>{property.title}</td>
               <td>{property.address}</td>
               <td>{property.price}</td>
-              <td>{property.type}</td>
+              <td>{property.property_type}</td>
               <td>
                 <button className="delete-btn">Delete</button>
               </td>
