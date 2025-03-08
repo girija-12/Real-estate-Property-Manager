@@ -1,11 +1,10 @@
-import React, { Children } from "react";
+import React from "react";
 import { Navigate} from "react-router-dom";
 
 const PrivateRoute = ({ allowedRoles, children }) => {
-  const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("role")?.toLowerCase();
 
-  if (!token) {
+  if (!userRole) {
     return <Navigate to="/login" replace />;  // Redirect if not logged in
   }
 
