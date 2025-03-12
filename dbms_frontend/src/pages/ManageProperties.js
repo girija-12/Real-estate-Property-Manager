@@ -16,7 +16,13 @@ const ManageProperties = () => {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch('http://localhost:5000/get-properties');
+      const username = localStorage.getItem("username"); // Get username from localStorage
+      if (!username) {
+        console.error("No username found in localStorage");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/get-properties?username=${encodeURIComponent(username)}`);
       const data = await response.json();
       setProperties(data.properties);  // Assuming response contains properties
     } catch (error) {
@@ -75,7 +81,7 @@ const ManageProperties = () => {
       <table className="properties-table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Property Name</th>
             <th>Address</th>
             <th>Price</th>
             <th>Type</th>

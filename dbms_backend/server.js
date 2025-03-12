@@ -116,7 +116,7 @@ app.post('/login', (req, res) => {
       // Return user data (omit password for security)
       res.status(200).json({
         message: 'Login successful',
-        user: { username: user.username, role: user.role, full_name: user.full_name },
+        user: { username: user.username, role: user.role},
       });
     });
   });
@@ -136,13 +136,21 @@ app.get('/get-users', (req, res) => {
 
 // Get properties route
 app.get('/get-properties', (req, res) => {
-  const query = 'SELECT * FROM Properties';
-  db.query(query, (err, results) => {
+  const username = req.query.username;  // Get username from request
+
+  if (!username) {
+    return res.status(400).json({ message: 'Username is required' });
+  }
+
+  const query = 'CALL GetUserProperties(?)';  // Call stored procedure
+  
+  db.query(query, [username], (err, results) => {
     if (err) {
+      console.error("Error fetching properties:", err);
       return res.status(500).json({ message: 'Error fetching properties' });
     }
-    console.log("Fetched properties:", results); // Log the fetched properties
-    res.json({ properties: results });
+
+    res.json({ properties: results[0] }); // Stored procedures return an array, so use results[0]
   });
 });
 
@@ -182,6 +190,46 @@ app.get('/api/dashboard/counts', (req, res) => {
   .catch((err) => {
     console.error("Error fetching counts:", err); // Log error for debugging
     res.status(500).json({ message: 'Error fetching dashboard counts', error: err });
+  });
+});
+
+// Get tenants assigned to manager's properties
+app.get('/get-tenants', (req, res) => {
+  const username = req.query.username; // Get manager's username from request
+
+  if (!username) {
+    return res.status(400).json({ message: 'Username is required' });
+  }
+
+  const query = 'CALL GetManagerTenants(?)';  // Call stored procedure
+
+  db.query(query, [username], (err, results) => {
+    if (err) {
+      console.error("Error fetching tenants:", err);
+      return res.status(500).json({ message: 'Error fetching tenants' });
+    }
+
+    res.json({ tenants: results[0] }); // Stored procedures return an array, so use results[0]
+  });
+});
+
+// Get maintenance requests assigned to the manager
+app.get('/get-maintenance-requests', (req, res) => {
+  const username = req.query.username;
+
+  if (!username) {
+    return res.status(400).json({ message: 'Username is required' });
+  }
+
+  const query = 'CALL GetManagerMaintenanceRequests(?)';  // Call stored procedure
+
+  db.query(query, [username], (err, results) => {
+    if (err) {
+      console.error("Error fetching maintenance requests:", err);
+      return res.status(500).json({ message: 'Error fetching maintenance requests' });
+    }
+
+    res.json({ maintenanceRequests: results[0] });
   });
 });
 

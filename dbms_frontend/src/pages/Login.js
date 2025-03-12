@@ -24,7 +24,7 @@ const Login = () => {
     axios
       .post("http://localhost:5000/login", userData)
       .then((response) => {
-        localStorage.setItem("token", response.data.token);  // Store JWT Token
+        localStorage.setItem("username", response.data.user.username);  // Store username
         localStorage.setItem("role", response.data.user.role);    // Store user role
         setSuccessMessage("Login successful!");
         setError("");

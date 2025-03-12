@@ -24,6 +24,9 @@ const ManagerDashboard = () => {
           <Link to="/manage-tenants" className="sidebar-link">
             <Users className="icon" /> Manage Tenants
           </Link>
+          <Link to="/manage-maintenance" className="sidebar-link">
+            <ClipboardList className="icon" /> Manage Maintenance Requests
+          </Link>
         </nav>
         <button onClick={handleLogout} className="logout-btn">
           <LogOut className="icon" /> Logout

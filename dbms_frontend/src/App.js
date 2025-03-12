@@ -7,6 +7,8 @@ import TenantDashboard from "./pages/TenantDashboard";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import ManageUsers from "./pages/ManageUsers"; // Add this import
 import ManageProperties from "./pages/ManageProperties"; // Add this import
+import ManageTenants from "./pages/ManageTenants";
+import ManageMaintenance from "./pages/ManageMaintenance";
 import PrivateRoute from "./PrivateRoute";
 
 function App() {
@@ -23,21 +25,6 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route path="/manager-dashboard"
-          element={
-            <PrivateRoute allowedRoles={["manager"]}>
-              <ManagerDashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route path="/tenant-dashboard"
-          element={
-            <PrivateRoute allowedRoles={["tenant"]}>
-              <TenantDashboard />
-            </PrivateRoute>
-          }
-        />
-        
         <Route path="/manage-users"
           element={
             <PrivateRoute allowedRoles={["admin"]}>
@@ -50,6 +37,38 @@ function App() {
           element={
             <PrivateRoute allowedRoles={["admin","manager"]}>
               <ManageProperties />
+            </PrivateRoute>
+          }
+        />
+        
+        <Route path="/manager-dashboard"
+          element={
+            <PrivateRoute allowedRoles={["manager"]}>
+              <ManagerDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/manage-tenants"
+          element={
+            <PrivateRoute allowedRoles={["manager"]}>
+              <ManageTenants />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/manage-maintenance"
+          element={
+            <PrivateRoute allowedRoles={["manager"]}>
+              <ManageMaintenance />
+            </PrivateRoute>
+          }
+        />
+
+        <Route path="/tenant-dashboard"
+          element={
+            <PrivateRoute allowedRoles={["tenant"]}>
+              <TenantDashboard />
             </PrivateRoute>
           }
         />
