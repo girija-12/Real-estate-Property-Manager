@@ -154,6 +154,54 @@ app.get('/get-properties', (req, res) => {
   });
 });
 
+app.post('/add-property', async (req, res) => {
+  const { username, title, description, address, price, property_type, manager_id } = req.body;
+
+  if (!username || !title || !description || !address || !price || !property_type) {
+      return res.status(400).json({ message: "All fields are required" });
+  }
+
+  try {
+      // Get user role and manager_id (if manager)
+      const userQuery = 'SELECT user_id, role FROM Users WHERE username = ?';
+      db.query(userQuery, [username], (err, userResults) => {
+          if (err) {
+              console.error("Error fetching user:", err);
+              return res.status(500).json({ message: "Error fetching user details" });
+          }
+
+          if (userResults.length === 0) {
+              return res.status(404).json({ message: "User not found" });
+          }
+
+          const user = userResults[0];
+
+          let finalManagerId = manager_id; // Use provided manager_id if admin
+          if (user.role === 'manager') {
+              finalManagerId = user.user_id; // Set manager's own ID
+          } else if (user.role !== 'admin' && !finalManagerId) {
+              return res.status(403).json({ message: "Unauthorized to assign manager_id" });
+          }
+
+          // Insert property
+          const insertQuery = `
+              INSERT INTO Properties (manager_id, title, description, address, price, property_type, status) 
+              VALUES (?, ?, ?, ?, ?, ?, 'available')`;
+
+          db.query(insertQuery, [finalManagerId, title, description, address, price, property_type], (err, result) => {
+              if (err) {
+                  console.error("Error inserting property:", err);
+                  return res.status(500).json({ message: "Error adding property" });
+              }
+              res.json({ message: "Property added successfully", propertyId: result.insertId });
+          });
+      });
+  } catch (error) {
+      console.error("Unexpected error:", error);
+      res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 // Get dashboard counts (users, properties, pending maintenance requests)
 app.get('/api/dashboard/counts', (req, res) => {
   const queries = [
