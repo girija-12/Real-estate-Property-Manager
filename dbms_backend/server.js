@@ -202,6 +202,25 @@ app.post('/add-property', async (req, res) => {
   }
 });
 
+// Delete user route
+app.delete('/delete-user/:id', (req, res) => {
+  const userId = req.params.id;
+
+  const deleteQuery = 'DELETE FROM Users WHERE user_id = ?';
+  db.query(deleteQuery, [userId], (err, result) => {
+    if (err) {
+      console.error("Error deleting user:", err);
+      return res.status(500).json({ message: "Error deleting user" });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "User deleted successfully" });
+  });
+});
+
 // Get dashboard counts (users, properties, pending maintenance requests)
 app.get('/api/dashboard/counts', (req, res) => {
   const queries = [

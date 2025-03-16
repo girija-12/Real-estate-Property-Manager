@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import './ManageUsers.css'; // Custom styling
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -10,21 +12,23 @@ const ManageUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/get-users');
-      const data = await response.json();
-      setUsers(data.users);  // Assuming the response returns a list of users
+      const response = await axios.get('http://localhost:5000/get-users');
+      setUsers(response.data.users); // Assuming the API returns { users: [...] }
     } catch (error) {
       console.error('Error fetching users:', error);
     }
   };
 
   const handleDeleteUser = async (userId) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this user?');
+    if (!confirmDelete) return;
+
     try {
-      const response = await fetch(`http://localhost:5000/delete-user/${userId}`, { method: 'DELETE' });
-      if (response.ok) {
-        fetchUsers();  // Refresh the list after deletion
-      } else {
-        console.log('Failed to delete user');
+      const response = await axios.delete(`http://localhost:5000/delete-user/${userId}`);
+      if (response.status === 200) {
+        setUsers(users.filter(user => user.user_id !== userId));
+        setMessage('User deleted successfully!'); // Set success message
+        setTimeout(() => setMessage(''), 3000); // Clear message after 3 seconds
       }
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -45,12 +49,14 @@ const ManageUsers = () => {
         </thead>
         <tbody>
           {users.map(user => (
-            <tr key={user.id}>
+            <tr key={user.user_id}>
               <td>{user.username}</td>
               <td>{user.email}</td>
               <td>{user.role}</td>
               <td>
-                <button onClick={() => handleDeleteUser(user.id)} className="delete-btn">Delete</button>
+                <button onClick={() => handleDeleteUser(user.user_id)} className="delete-btn">
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
