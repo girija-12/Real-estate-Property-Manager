@@ -19,6 +19,10 @@ const ManageProperties = () => {
     manager_id: "",
   });
 
+  // Edit property state
+  const [editProperty, setEditProperty] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
   // Fetch properties and user role on component mount
   useEffect(() => {
     fetchProperties();
@@ -53,18 +57,12 @@ const ManageProperties = () => {
     }
   };
 
-  // Handle form submit
+  // Handle form submit (Add Property)
   const handleAddProperty = async (e) => {
     e.preventDefault();
-
     try {
       const response = await axios.post("http://localhost:5000/add-property", {
-        title: newProperty.title,
-        description: newProperty.description,
-        address: newProperty.address,
-        price: newProperty.price,
-        property_type: newProperty.property_type,
-        manager_id: newProperty.manager_id,
+        ...newProperty,
         username: localStorage.getItem("username"),
       });
 
@@ -72,10 +70,7 @@ const ManageProperties = () => {
         setSuccessMessage("Property added successfully!");
         setError("");
         fetchProperties(); // Refresh properties
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          setSuccessMessage("");
-        }, 3000);
+        setTimeout(() => setSuccessMessage(""), 3000);
         setNewProperty({
           title: "",
           description: "",
@@ -90,6 +85,33 @@ const ManageProperties = () => {
       console.error(error);
     }
   };
+
+  // Handle Edit Button Click
+  const handleEditClick = (property) => {
+    setEditProperty(property);
+    setShowEditModal(true);
+  };
+
+  // Handle Property Update
+  const handleUpdateProperty = async () => {
+    if (!editProperty) return;
+  
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/update-property/${editProperty.id}`,  // Ensure correct ID
+        editProperty
+      );
+  
+      if (response.status === 200) {
+        setSuccessMessage("Property updated successfully!");
+        setShowEditModal(false);
+        fetchProperties(); // Refresh list after update
+      }
+    } catch (error) {
+      setError("Failed to update property");
+      console.error(error);
+    }
+  };  
 
   return (
     <div className="manage-properties-container">
@@ -137,7 +159,6 @@ const ManageProperties = () => {
           }
           required
         />
-        {/* Dropdown for Property Type */}
         <select
           value={newProperty.property_type}
           onChange={(e) =>
@@ -148,8 +169,6 @@ const ManageProperties = () => {
           <option value="commercial">Commercial</option>
           <option value="residential">Residential</option>
         </select>
-
-        {/* Manager ID Field (Only for Admins) */}
         {userRole === "admin" && (
           <input
             type="number"
@@ -161,9 +180,7 @@ const ManageProperties = () => {
           />
         )}
 
-        <button type="submit" className="add-btn">
-          Add Property
-        </button>
+        <button type="submit" className="add-btn">Add Property</button>
       </form>
 
       {/* Properties Table */}
@@ -179,18 +196,51 @@ const ManageProperties = () => {
         </thead>
         <tbody>
           {properties.map((property) => (
-            <tr key={property.id}>
+            <tr key={property.property_id}>
               <td>{property.title}</td>
               <td>{property.address}</td>
               <td>{property.price}</td>
               <td>{property.property_type}</td>
               <td>
-                <button className="edit-btn"> Edit </button>
+                <button className="edit-btn" onClick={() => handleEditClick(property)}>Edit</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* Edit Property Modal */}
+      {showEditModal && editProperty && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Edit Property</h2>
+            <input
+              type="text"
+              value={editProperty.title}
+              onChange={(e) => setEditProperty({ ...editProperty, title: e.target.value })}
+            />
+            <input
+              type="text"
+              value={editProperty.address}
+              onChange={(e) => setEditProperty({ ...editProperty, address: e.target.value })}
+            />
+            <input
+              type="number"
+              value={editProperty.price}
+              onChange={(e) => setEditProperty({ ...editProperty, price: e.target.value })}
+            />
+            <select
+              value={editProperty.property_type}
+              onChange={(e) => setEditProperty({ ...editProperty, property_type: e.target.value })}
+            >
+              <option value="commercial">Commercial</option>
+              <option value="residential">Residential</option>
+            </select>
+            <button onClick={handleUpdateProperty} className="update-btn">Update</button>
+            <button onClick={() => setShowEditModal(false)} className="cancel-btn">Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

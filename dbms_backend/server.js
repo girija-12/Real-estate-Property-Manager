@@ -300,6 +300,83 @@ app.get('/get-maintenance-requests', (req, res) => {
   });
 });
 
+// Get Tenant Rent
+app.get("/get-rent", (req, res) => {
+  const username = req.query.username;
+  const sql = "SELECT rent FROM tenants WHERE username = ?";
+  
+  db.query(sql, [username], (err, result) => {
+    if (err) {
+      console.error("Error fetching rent:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (result.length > 0) {
+      res.json({ rent: result[0].rent });
+    } else {
+      res.json({ rent: 0 });  // Default if no rent found
+    }
+  });
+});
+
+// Get Lease Details
+app.get("/get-lease", (req, res) => {
+  const username = req.query.username;
+  const sql = `
+    SELECT p.property_name, l.start_date, l.end_date 
+    FROM leases l 
+    JOIN properties p ON l.property_id = p.id 
+    JOIN tenants t ON l.tenant_id = t.id 
+    WHERE t.username = ?`;
+
+  db.query(sql, [username], (err, result) => {
+    if (err) {
+      console.error("Error fetching lease details:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (result.length > 0) {
+      res.json({
+        property: result[0].property_name,
+        start_date: result[0].start_date,
+        end_date: result[0].end_date,
+      });
+    } else {
+      res.json({});
+    }
+  });
+});
+
+// Get Maintenance Requests
+app.get("/get-maintenance", (req, res) => {
+  const username = req.query.username;
+  const sql = `
+    SELECT request, status 
+    FROM maintenance_requests 
+    WHERE tenant_username = ? 
+    ORDER BY created_at DESC`;
+
+  db.query(sql, [username], (err, result) => {
+    if (err) {
+      console.error("Error fetching maintenance requests:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json({ requests: result });
+  });
+});
+
+// Add New Maintenance Request
+app.post("/add-maintenance", (req, res) => {
+  const { username, request } = req.body;
+  const sql = "INSERT INTO maintenance_requests (tenant_username, request, status) VALUES (?, ?, 'Pending')";
+
+  db.query(sql, [username, request], (err, result) => {
+    if (err) {
+      console.error("Error adding maintenance request:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json({ message: "Request added successfully" });
+  });
+});
+
 // Root route for testing (GET request)
 app.get('/', (req, res) => {
   res.send('Hello from the backend!');
