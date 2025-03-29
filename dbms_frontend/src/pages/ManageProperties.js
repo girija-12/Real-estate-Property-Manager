@@ -60,31 +60,36 @@ const ManageProperties = () => {
   // Handle form submit (Add Property)
   const handleAddProperty = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:5000/add-property", {
-        ...newProperty,
-        username: localStorage.getItem("username"),
-      });
 
-      if (response.status === 200) {
-        setSuccessMessage("Property added successfully!");
-        setError("");
-        fetchProperties(); // Refresh properties
-        setTimeout(() => setSuccessMessage(""), 3000);
-        setNewProperty({
-          title: "",
-          description: "",
-          address: "",
-          price: "",
-          property_type: "",
-          manager_id: userRole === "manager" ? userId : "",
+    console.log("Adding Property:", newProperty); // Debugging
+
+    try {
+        const response = await axios.post("http://localhost:5000/add-property", { 
+            ...newProperty, 
+            username: localStorage.getItem("username") 
         });
-      }
+
+        console.log("Response from Server:", response.data); // Debugging
+
+        if (response.status === 200) {
+            setSuccessMessage("Property added successfully!");
+            setError("");
+            fetchProperties(); 
+            setTimeout(() => setSuccessMessage(""), 3000);
+            setNewProperty({
+                title: "",
+                description: "",
+                address: "",
+                price: "",
+                property_type: "",
+                manager_id: userRole === "manager" ? userId : "",
+            });
+        }
     } catch (error) {
-      setError("Failed to add property");
-      console.error(error);
+        console.error("Add Property Error:", error);
+        setError(error.response?.data?.message || "Failed to add property");
     }
-  };
+};
 
   // Handle Edit Button Click
   const handleEditClick = (property) => {
@@ -96,22 +101,27 @@ const ManageProperties = () => {
   const handleUpdateProperty = async () => {
     if (!editProperty) return;
   
+    console.log("Updating Property:", editProperty); // Debugging Log
+  
     try {
       const response = await axios.put(
-        `http://localhost:5000/update-property/${editProperty.id}`,  // Ensure correct ID
+        `http://localhost:5000/update-property/${editProperty.property_id}`,
         editProperty
       );
+  
+      console.log("Update Response:", response.data); // Debugging Log
   
       if (response.status === 200) {
         setSuccessMessage("Property updated successfully!");
         setShowEditModal(false);
         fetchProperties(); // Refresh list after update
+        setTimeout(() => setSuccessMessage(""), 3000);
       }
     } catch (error) {
       setError("Failed to update property");
-      console.error(error);
+      console.error("Update Error:", error);
     }
-  };  
+  };   
 
   return (
     <div className="manage-properties-container">

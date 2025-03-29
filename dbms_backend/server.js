@@ -377,6 +377,30 @@ app.post("/add-maintenance", (req, res) => {
   });
 });
 
+app.put("/update-property/:property_id", (req, res) => {
+  const { property_id } = req.params;
+  const { title, description, address, price, property_type } = req.body;
+
+  const sql = `
+    UPDATE Properties 
+    SET title = ?, description = ?, address = ?, price = ?, property_type = ?, updated_at = NOW() 
+    WHERE property_id = ?
+  `;
+
+  db.query(sql, [title, description, address, price, property_type, property_id], (err, result) => {
+    if (err) {
+      console.error("Error updating property:", err);
+      return res.status(500).json({ error: "Database update failed" });
+    }
+
+    if (result.affectedRows > 0) {
+      res.json({ message: "Property updated successfully" });
+    } else {
+      res.status(404).json({ error: "Property not found" });
+    }
+  });
+});
+
 // Root route for testing (GET request)
 app.get('/', (req, res) => {
   res.send('Hello from the backend!');
