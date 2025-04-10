@@ -1,9 +1,27 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ClipboardList, Users, LogOut } from "lucide-react";
-import './ManagerDashboard.css';  // Import the custom CSS file
+import './ManagerDashboard.css';
 
 const ManagerDashboard = () => {
+  const [stats, setStats] = useState({ total_properties: 0, active_tenants: 0 });
+
+  useEffect(() => {
+    const username = localStorage.getItem("username"); // Get stored username
+
+    if (username) {
+      fetch(`http://localhost:5000/manager-dashboard-stats?username=${encodeURIComponent(username)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setStats({
+            total_properties: data.total_properties || 0,
+            active_tenants: data.active_tenants || 0,
+          });
+        })
+        .catch((err) => console.error("Error fetching dashboard stats:", err));
+    }
+  }, []);
+
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = "/login";
@@ -37,14 +55,14 @@ const ManagerDashboard = () => {
       <main className="main-content">
         <h1 className="welcome-text">Welcome, Manager</h1>
         <div className="dashboard-cards">
-          {/* Dashboard Cards */}
+          {/* Dashboard Cards - Dynamically Updated */}
           <div className="card">
             <h3 className="card-title">Total Properties Managed</h3>
-            <p className="card-value">30</p>
+            <p className="card-value">{stats.total_properties}</p>
           </div>
           <div className="card">
             <h3 className="card-title">Active Tenants</h3>
-            <p className="card-value">89</p>
+            <p className="card-value">{stats.active_tenants}</p>
           </div>
         </div>
       </main>
