@@ -303,7 +303,7 @@ app.get('/get-maintenance-requests', (req, res) => {
 // Get Tenant Rent
 app.get("/get-rent", (req, res) => {
   const username = req.query.username;
-  const sql = "SELECT rent FROM tenants WHERE username = ?";
+  const sql = `SELECT t.rent_amount FROM Tenants t JOIN Users u ON t.user_id = u.user_id WHERE u.username = ?`;
   
   db.query(sql, [username], (err, result) => {
     if (err) {
@@ -311,7 +311,7 @@ app.get("/get-rent", (req, res) => {
       return res.status(500).json({ error: "Database error" });
     }
     if (result.length > 0) {
-      res.json({ rent: result[0].rent });
+      res.json({ rent: result[0].rent_amount});
     } else {
       res.json({ rent: 0 });  // Default if no rent found
     }
@@ -321,12 +321,14 @@ app.get("/get-rent", (req, res) => {
 // Get Lease Details
 app.get("/get-lease", (req, res) => {
   const username = req.query.username;
+
   const sql = `
-    SELECT p.property_name, l.start_date, l.end_date 
-    FROM leases l 
-    JOIN properties p ON l.property_id = p.id 
-    JOIN tenants t ON l.tenant_id = t.id 
-    WHERE t.username = ?`;
+    SELECT p.title AS property, t.lease_start_date, t.lease_end_date
+    FROM Tenants t
+    JOIN Users u ON t.user_id = u.user_id
+    JOIN Properties p ON t.property_id = p.property_id
+    WHERE u.username = ?
+  `;
 
   db.query(sql, [username], (err, result) => {
     if (err) {
@@ -334,13 +336,9 @@ app.get("/get-lease", (req, res) => {
       return res.status(500).json({ error: "Database error" });
     }
     if (result.length > 0) {
-      res.json({
-        property: result[0].property_name,
-        start_date: result[0].start_date,
-        end_date: result[0].end_date,
-      });
+      res.json(result[0]);
     } else {
-      res.json({});
+      res.status(404).json({ error: "Lease details not found" });
     }
   });
 });
@@ -348,11 +346,14 @@ app.get("/get-lease", (req, res) => {
 // Get Maintenance Requests
 app.get("/get-maintenance", (req, res) => {
   const username = req.query.username;
+
   const sql = `
-    SELECT request, status 
-    FROM maintenance_requests 
-    WHERE tenant_username = ? 
-    ORDER BY created_at DESC`;
+    SELECT m.issue_description AS request, m.status
+    FROM MaintenanceRequests m
+    JOIN Tenants t ON m.tenant_id = t.tenant_id
+    JOIN Users u ON t.user_id = u.user_id
+    WHERE u.username = ?
+  `;
 
   db.query(sql, [username], (err, result) => {
     if (err) {
@@ -366,14 +367,31 @@ app.get("/get-maintenance", (req, res) => {
 // Add New Maintenance Request
 app.post("/add-maintenance", (req, res) => {
   const { username, request } = req.body;
-  const sql = "INSERT INTO maintenance_requests (tenant_username, request, status) VALUES (?, ?, 'Pending')";
 
-  db.query(sql, [username, request], (err, result) => {
+  const findTenantSQL = `SELECT t.tenant_id, t.property_id FROM Tenants t
+    JOIN Users u ON t.user_id = u.user_id WHERE u.username = ?`;
+
+  db.query(findTenantSQL, [username], (err, result) => {
     if (err) {
-      console.error("Error adding maintenance request:", err);
+      console.error("Error finding tenant:", err);
       return res.status(500).json({ error: "Database error" });
     }
-    res.json({ message: "Request added successfully" });
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Tenant not found" });
+    }
+
+    const { tenant_id, property_id } = result[0];
+    const insertRequestSQL = `
+      INSERT INTO MaintenanceRequests (tenant_id, property_id, issue_description, status)
+      VALUES (?, ?, ?, 'open')`;
+
+    db.query(insertRequestSQL, [tenant_id, property_id, request], (err, result) => {
+      if (err) {
+        console.error("Error inserting maintenance request:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+      res.json({ message: "Maintenance request submitted successfully" });
+    });
   });
 });
 
@@ -397,6 +415,28 @@ app.put("/update-property/:property_id", (req, res) => {
       res.json({ message: "Property updated successfully" });
     } else {
       res.status(404).json({ error: "Property not found" });
+    }
+  });
+});
+
+app.get("/manager-dashboard-stats", (req, res) => {
+  const username = req.query.username; // Get manager's username
+
+  const sql = `
+    SELECT 
+      (SELECT COUNT(*) FROM Properties p JOIN Users u ON p.manager_id = u.user_id WHERE u.username = ?) AS total_properties,
+      (SELECT COUNT(*) FROM Tenants t JOIN Properties p ON t.property_id = p.property_id JOIN Users u ON p.manager_id = u.user_id WHERE u.username = ?) AS active_tenants
+  `;
+
+  db.query(sql, [username, username], (err, result) => {
+    if (err) {
+      console.error("Error fetching manager stats:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (result.length > 0) {
+      res.json(result[0]);  // Send stats
+    } else {
+      res.json({ total_properties: 0, active_tenants: 0 });
     }
   });
 });

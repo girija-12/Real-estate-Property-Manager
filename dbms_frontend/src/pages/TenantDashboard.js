@@ -26,11 +26,22 @@ const TenantDashboard = () => {
     fetch(`http://localhost:5000/get-lease?username=${username}`)
       .then((res) => res.json())
       .then((data) => {
-        setLeaseDetails(data);
+        if (data.lease_start_date && data.lease_end_date) {
+          const startDate = new Date(data.lease_start_date).toISOString().split("T")[0]; // Format: YYYY-MM-DD
+          const endDate = new Date(data.lease_end_date).toISOString().split("T")[0]; // Format: YYYY-MM-DD
+  
+          setLeaseDetails({
+            property: data.property,
+            lease_start_date: startDate,
+            lease_end_date: endDate,
+          });
+        } else {
+          setLeaseDetails(null); // Handle missing data
+        }
         setShowLeaseModal(true);
       })
       .catch((err) => console.error("Error fetching lease details:", err));
-  };
+  };  
 
   // Fetch maintenance requests
   const fetchMaintenanceRequests = () => {
@@ -75,7 +86,7 @@ const TenantDashboard = () => {
             <Home className="icon" /> Dashboard
           </Link>
           <Link to="#" onClick={fetchLeaseDetails} className="sidebar-link">
-            <FileText className="icon" /> Lease Details
+            <FileText className="icon" /> Rent Details
           </Link>
           <Link to="#" onClick={fetchMaintenanceRequests} className="sidebar-link">
             <Wrench className="icon" /> Maintenance Requests
@@ -101,10 +112,10 @@ const TenantDashboard = () => {
       {showLeaseModal && leaseDetails && (
         <div className="modal-overlay">
           <div className="modal">
-            <h2>Lease Details</h2>
+            <h2>Rent Details</h2>
             <p><strong>Property:</strong> {leaseDetails.property}</p>
-            <p><strong>Start Date:</strong> {leaseDetails.start_date}</p>
-            <p><strong>End Date:</strong> {leaseDetails.end_date}</p>
+            <p><strong>Start Date:</strong> {leaseDetails.lease_start_date}</p>
+            <p><strong>End Date:</strong> {leaseDetails.lease_end_date}</p>
             <button onClick={() => setShowLeaseModal(false)}>Close</button>
           </div>
         </div>
